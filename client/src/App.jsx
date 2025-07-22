@@ -11,10 +11,21 @@ function App() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // TODO: send to backend
-    console.log(formData);
+
+    try {
+      const res = await fetch('http://localhost:3001/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
+      });
+      const data = await res.json();
+      console.log(data.description);
+      // TODO: Display it
+    } catch (err) {
+      console.error("Error generating moodboard:", err);
+    }
   };
 
   return (
