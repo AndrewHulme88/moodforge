@@ -49,6 +49,38 @@ Limit it to 3–4 sentences.`;
   }
 });
 
+const Replicate = require('replicate');
+const replicate = new Replicate({
+  auth: process.env.REPLICATE_API_TOKEN,
+});
+
+app.post('/api/generate-image', async (req, res) => {
+  const { prompt } = req.body;
+
+  console.log("🔧 Received image prompt:", prompt);
+
+  try {
+    const output = await replicate.run(
+      "stability-ai/stable-diffusion",
+      {
+        version: "ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
+        input: {
+          prompt,
+          width: 768,
+          height: 768,
+        }
+      }
+    );
+
+    console.log("✅ Replicate output:", output);
+    res.json({ image: output?.[0] });
+
+  } catch (err) {
+    console.error("❌ Image gen error:", err);
+    res.status(500).json({ error: "Image generation failed." });
+  }
+});
+
 app.listen(3001, () => {
   console.log("🌐 MoodForge backend running at http://localhost:3001");
 });
