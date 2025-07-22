@@ -7,12 +7,17 @@ function App() {
     tone: "Cinematic"
   });
 
+  const [loading, setLoading] = useState(false);
+  const [description, setDescription] = useState("");
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setDescription("");
 
     try {
       const res = await fetch('http://localhost:3001/api/generate', {
@@ -20,11 +25,14 @@ function App() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
+
       const data = await res.json();
-      console.log(data.description);
-      // TODO: Display it
+      setDescription(data.description || "No description returned.");
     } catch (err) {
-      console.error("Error generating moodboard:", err);
+      console.error("Error:", err);
+      setDescription("Something went wrong.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -70,9 +78,16 @@ function App() {
             type="submit"
             className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
           >
-            Generate Moodboard
+            {loading ? "Generating..." : "Generate Moodboard"}
           </button>
         </form>
+
+        {description && (
+          <div className="mt-6 p-4 bg-gray-50 border-l-4 border-indigo-400 rounded">
+            <h2 className="text-xl font-semibold mb-2">Generated Description</h2>
+            <p className="text-gray-700 whitespace-pre-line">{description}</p>
+          </div>
+        )}
       </div>
     </div>
   );

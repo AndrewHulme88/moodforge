@@ -1,0 +1,11 @@
+# Root .gitignore
+# Ignore node_modules in both frontend and backend
+client/node_modules/
+server/node_modules/
+
+# Ignore environment variables
+server/.env
+
+# Optional: OS and editor files
+.DS_Store
+*.log
