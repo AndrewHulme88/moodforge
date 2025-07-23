@@ -8,20 +8,19 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// 🔑 Init OpenAI
+// 🔑 OpenAI setup
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
-// 🔑 Init Replicate
+// 🔑 Replicate setup
 const replicate = new Replicate({
   auth: process.env.REPLICATE_API_TOKEN,
 });
 
-// 🧠 AI Text Endpoint
+// 🧠 Scene Description Endpoint
 app.post('/api/generate', async (req, res) => {
   const { theme, genre, tone } = req.body;
-
   if (!theme || !genre || !tone) {
     return res.status(400).json({ error: "Missing required fields." });
   }
@@ -40,11 +39,7 @@ Limit it to 3–4 sentences.`;
     });
 
     const text = response.choices?.[0]?.message?.content?.trim();
-
-    if (!text) {
-      console.warn("⚠️ No content in OpenAI response");
-      return res.status(500).json({ description: "AI returned no result." });
-    }
+    if (!text) return res.status(500).json({ description: "AI returned no result." });
 
     console.log("✅ OpenAI description:", text);
     res.json({ description: text });
@@ -62,14 +57,10 @@ app.post('/api/generate-image', async (req, res) => {
   try {
     const prediction = await replicate.predictions.create({
       version: "ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
-      input: {
-        prompt,
-        width: 768,
-        height: 768,
-      },
+      input: { prompt, width: 768, height: 768 },
     });
 
-    // Poll until complete
+    // Poll for final result
     let finalPrediction = prediction;
     while (
       finalPrediction.status !== "succeeded" &&
@@ -84,7 +75,6 @@ app.post('/api/generate-image', async (req, res) => {
       console.log("✅ Final image URL:", url);
       res.json({ image: url });
     } else {
-      console.warn("⚠️ Image generation failed or no output.");
       res.status(500).json({ error: "Image generation failed or no output." });
     }
 
@@ -94,6 +84,32 @@ app.post('/api/generate-image', async (req, res) => {
   }
 });
 
+// 🎨 Color Palette Endpoint
+app.post('/api/generate-colors', async (req, res) => {
+  const { description } = req.body;
+  if (!description) return res.status(400).json({ error: "Missing description." });
+
+  const prompt = `Based on this scene description, return a list of 5 aesthetically cohesive hex color codes (like ["#112233", "#aabbcc", ...]) that match the mood:\n\n${description}`;
+
+  try {
+    const response = await openai.chat.completions.create({
+      model: "gpt-4",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+    });
+
+    const text = response.choices?.[0]?.message?.content;
+    const match = text.match(/\[.*?\]/s);
+    const colors = match ? JSON.parse(match[0]) : [];
+
+    console.log("🎨 Generated colors:", colors);
+    res.json({ colors });
+
+  } catch (err) {
+    console.error("❌ Color generation error:", err);
+    res.status(500).json({ error: "Failed to generate color theme." });
+  }
+});
 
 // 🚀 Start server
 app.listen(3001, () => {

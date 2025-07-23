@@ -1,21 +1,27 @@
-import React from "react";
+function MoodForm({ formData, setFormData, handleSubmit, loading }) {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-function MoodForm({ formData, loading, onChange, onSubmit }) {
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <input
         name="theme"
         type="text"
         placeholder="e.g. abandoned underwater lab"
         value={formData.theme}
-        onChange={onChange}
+        onChange={handleChange}
         className="w-full p-2 border rounded"
         required
       />
       <select
         name="genre"
         value={formData.genre}
-        onChange={onChange}
+        onChange={handleChange}
         className="w-full p-2 border rounded"
       >
         <option>Fantasy</option>
@@ -27,7 +33,7 @@ function MoodForm({ formData, loading, onChange, onSubmit }) {
       <select
         name="tone"
         value={formData.tone}
-        onChange={onChange}
+        onChange={handleChange}
         className="w-full p-2 border rounded"
       >
         <option>Cinematic</option>
