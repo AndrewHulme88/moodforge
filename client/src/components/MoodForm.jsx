@@ -22,7 +22,7 @@ function MoodForm({ formData, setFormData, handleSubmit, loading }) {
         name="genre"
         value={formData.genre}
         onChange={handleChange}
-        className="w-full p-2 border rounded"
+        className="w-1/2 p-2 border rounded"
       >
         <option>Fantasy</option>
         <option>Sci-fi</option>
@@ -34,7 +34,7 @@ function MoodForm({ formData, setFormData, handleSubmit, loading }) {
         name="tone"
         value={formData.tone}
         onChange={handleChange}
-        className="w-full p-2 border rounded"
+        className="w-1/2 p-2 border rounded"
       >
         <option>Cinematic</option>
         <option>Dark</option>
