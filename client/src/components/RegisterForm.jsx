@@ -1,47 +1,51 @@
 import { useState } from "react";
+import { registerUser } from "../services/authService";
+import { useNavigate } from "react-router-dom";
 
-function RegisterForm({ onRegister }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+function RegisterForm() {
+  const navigate = useNavigate();
+  const [formData, setFormData] = useState({ email: "", password: "" });
+  const [error, setError] = useState("");
+
+  const handleChange = (e) => {
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError("");
 
-    const res = await fetch("http://localhost:3001/api/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password }),
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      localStorage.setItem("token", data.token);
-      onRegister(data.user);
+    const result = await registerUser(formData);
+    if (result.token) {
+      localStorage.setItem("token", result.token);
+      navigate("/");
     } else {
-      alert(data.error || "Registration failed");
+      setError(result.error || "Registration failed");
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <h2 className="text-2xl font-bold">Register</h2>
       <input
         type="email"
+        name="email"
         placeholder="Email"
-        className="w-full p-2 border rounded"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+        value={formData.email}
+        onChange={handleChange}
         required
+        className="w-full p-2 border rounded"
       />
       <input
         type="password"
+        name="password"
         placeholder="Password"
-        className="w-full p-2 border rounded"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        value={formData.password}
+        onChange={handleChange}
         required
+        className="w-full p-2 border rounded"
       />
-      <button type="submit" className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
+      {error && <p className="text-red-500">{error}</p>}
+      <button type="submit" className="bg-indigo-600 text-white px-4 py-2 rounded">
         Register
       </button>
     </form>
