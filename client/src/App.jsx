@@ -27,7 +27,7 @@ function App() {
       <Navbar isAuthenticated={isAuthenticated} token={token} handleLogout={handleLogout} />
 
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<HomePage isAuthenticated={isAuthenticated} />} />
         <Route path="/login" element={<LoginForm setToken={setToken} />} />
         <Route path="/register" element={<RegisterForm setToken={setToken} />} />
       </Routes>

@@ -4,7 +4,7 @@ import DescriptionBox from "../components/DescriptionBox";
 import ImageDisplay from "../components/ImageDisplay";
 import ColorPalette from "../components/ColorPalette";
 
-function HomePage() {
+function HomePage({ isAuthenticated }) {
   const [formData, setFormData] = useState({
     theme: "",
     genre: "Fantasy",
@@ -15,6 +15,17 @@ function HomePage() {
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [palette, setPalette] = useState([]);
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center text-center p-6">
+        <h2 className="text-2xl font-semibold">Please log in to use MoodForge</h2>
+        <p className="text-gray-600 mt-2">
+          You’ll need an account to generate moodboards.
+        </p>
+      </div>
+    );
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -71,13 +82,10 @@ function HomePage() {
 
       {description && (
         <div className="max-w-7xl mx-auto bg-white rounded-xl shadow-md p-4 sm:p-6 h-[80vh] overflow-hidden flex flex-col sm:flex-row gap-4">
-          {/* Left output: text + colors */}
           <div className="w-full sm:w-1/2 flex flex-col gap-4 overflow-auto pr-2">
             <DescriptionBox description={description} />
             <ColorPalette palette={palette} />
           </div>
-
-          {/* Right output: images */}
           <div className="w-full sm:w-1/2 overflow-auto pl-2">
             <ImageDisplay imageUrl={imageUrl} />
           </div>
