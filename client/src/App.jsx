@@ -13,14 +13,14 @@ function App() {
 
   const [loading, setLoading] = useState(false);
   const [description, setDescription] = useState("");
-  const [imageUrls, setImageUrls] = useState([]);
+  const [imageUrl, setImageUrl] = useState("");
   const [palette, setPalette] = useState([]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setDescription("");
-    setImageUrls([]);
+    setImageUrl("");
     setPalette([]);
 
     try {
@@ -47,10 +47,8 @@ function App() {
         body: JSON.stringify({ prompt: scene }),
       });
       const imageData = await imageRes.json();
-      const urls = Array.isArray(imageData.image)
-        ? imageData.image
-        : [imageData.image];
-      setImageUrls(urls);
+      console.log("✅ Final image URL:", imageData.image);
+      setImageUrl(imageData.image || "");
     } catch (err) {
       console.error("Error generating moodboard:", err);
       setDescription("Something went wrong.");
@@ -81,7 +79,7 @@ function App() {
 
           {/* Right output: images */}
           <div className="w-full sm:w-1/2 overflow-auto pl-2">
-            <ImageDisplay imageUrls={imageUrls} />
+            <ImageDisplay imageUrl={imageUrl} />
           </div>
         </div>
       )}
