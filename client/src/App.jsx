@@ -4,7 +4,7 @@ function App() {
   const [formData, setFormData] = useState({
     theme: "",
     genre: "Fantasy",
-    tone: "Cinematic"
+    tone: "Cinematic",
   });
 
   const [loading, setLoading] = useState(false);
@@ -22,7 +22,7 @@ function App() {
     setImageUrl("");
 
     try {
-      // Step 1: Get AI-generated text
+      // Step 1: Generate text
       const textRes = await fetch("http://localhost:3001/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,18 +30,25 @@ function App() {
       });
 
       const textData = await textRes.json();
-      setDescription(textData.description || "No description returned.");
+      const descriptionText = textData.description || "No description returned.";
+      setDescription(descriptionText);
 
-      // Step 2: Send description as image prompt
+      // Step 2: Generate image
       const imageRes = await fetch("http://localhost:3001/api/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: textData.description }),
+        body: JSON.stringify({ prompt: descriptionText }),
       });
 
       const imageData = await imageRes.json();
-      setImageUrl(imageData.image);
-      console.log("🎨 Image URL:", imageData.image);
+      console.log("✅ Final image URL:", imageData.image);
+
+      if (typeof imageData.image === "string") {
+        setImageUrl(imageData.image);
+      } else {
+        console.warn("No usable image URL.");
+      }
+
     } catch (err) {
       console.error("Error generating moodboard:", err);
       setDescription("Something went wrong.");
@@ -111,6 +118,9 @@ function App() {
               src={imageUrl}
               alt="AI Moodboard"
               className="w-full rounded shadow-md border"
+              onError={(e) => {
+                e.currentTarget.src = "https://via.placeholder.com/768x768?text=Image+Unavailable";
+              }}
             />
           </div>
         )}
