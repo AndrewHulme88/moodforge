@@ -13,18 +13,14 @@ function App() {
 
   const [loading, setLoading] = useState(false);
   const [description, setDescription] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageUrls, setImageUrls] = useState([]);
   const [palette, setPalette] = useState([]);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setDescription("");
-    setImageUrl("");
+    setImageUrls([]);
     setPalette([]);
 
     try {
@@ -49,7 +45,7 @@ function App() {
       const colorData = await colorRes.json();
       setPalette(Array.isArray(colorData.colors) ? colorData.colors : []);
 
-      // 3. Generate image
+      // 3. Generate images
       const imageRes = await fetch("http://localhost:3001/api/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -57,18 +53,8 @@ function App() {
       });
 
       const imageData = await imageRes.json();
-      const maybeUrl =
-        typeof imageData.image === "string"
-          ? imageData.image
-          : Array.isArray(imageData.image)
-          ? imageData.image[0]
-          : imageData.image?.output?.[0] || imageData.image?.url || null;
-
-      if (maybeUrl) {
-        setImageUrl(maybeUrl);
-      } else {
-        console.warn("No image URL found in response.");
-      }
+      const urls = Array.isArray(imageData.image) ? imageData.image : [imageData.image];
+      setImageUrls(urls);
     } catch (err) {
       console.error("Error generating moodboard:", err);
       setDescription("Something went wrong.");
@@ -90,7 +76,7 @@ function App() {
         />
 
         <DescriptionBox description={description} />
-        <ImageDisplay imageUrl={imageUrl} />
+        <ImageDisplay imageUrls={imageUrls} />
         <ColorPalette palette={palette} />
       </div>
     </div>

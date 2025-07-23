@@ -57,7 +57,7 @@ app.post('/api/generate-image', async (req, res) => {
   try {
     const prediction = await replicate.predictions.create({
       version: "ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
-      input: { prompt, width: 768, height: 768 },
+      input: { prompt, width: 768, height: 768, num_outputs: 3 },
     });
 
     // Poll for final result
@@ -71,9 +71,8 @@ app.post('/api/generate-image', async (req, res) => {
     }
 
     if (finalPrediction.status === "succeeded" && Array.isArray(finalPrediction.output)) {
-      const url = finalPrediction.output[0];
-      console.log("✅ Final image URL:", url);
-      res.json({ image: url });
+      console.log("✅ Final image URLs:", finalPrediction.output);
+      res.json({ image: finalPrediction.output });
     } else {
       res.status(500).json({ error: "Image generation failed or no output." });
     }
