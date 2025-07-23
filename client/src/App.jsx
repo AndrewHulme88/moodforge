@@ -1,4 +1,7 @@
 import { useState } from "react";
+import MoodForm from "./components/MoodForm";
+import DescriptionBox from "./components/DescriptionBox";
+import ImageDisplay from "./components/ImageDisplay";
 
 function App() {
   const [formData, setFormData] = useState({
@@ -22,7 +25,6 @@ function App() {
     setImageUrl("");
 
     try {
-      // Step 1: Generate text
       const textRes = await fetch("http://localhost:3001/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -30,25 +32,27 @@ function App() {
       });
 
       const textData = await textRes.json();
-      const descriptionText = textData.description || "No description returned.";
-      setDescription(descriptionText);
+      setDescription(textData.description || "No description returned.");
 
-      // Step 2: Generate image
       const imageRes = await fetch("http://localhost:3001/api/generate-image", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prompt: descriptionText }),
+        body: JSON.stringify({ prompt: textData.description }),
       });
 
       const imageData = await imageRes.json();
-      console.log("✅ Final image URL:", imageData.image);
+      const maybeUrl =
+        typeof imageData.image === "string"
+          ? imageData.image
+          : Array.isArray(imageData.image)
+          ? imageData.image[0]
+          : imageData.image?.output?.[0] || imageData.image?.url || null;
 
-      if (typeof imageData.image === "string") {
-        setImageUrl(imageData.image);
+      if (maybeUrl) {
+        setImageUrl(maybeUrl);
       } else {
-        console.warn("No usable image URL.");
+        console.warn("No image URL found in response.");
       }
-
     } catch (err) {
       console.error("Error generating moodboard:", err);
       setDescription("Something went wrong.");
@@ -61,69 +65,14 @@ function App() {
     <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-xl mx-auto bg-white p-6 rounded-xl shadow-md">
         <h1 className="text-3xl font-bold mb-4">MoodForge</h1>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <input
-            name="theme"
-            type="text"
-            placeholder="e.g. abandoned underwater lab"
-            value={formData.theme}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-            required
-          />
-          <select
-            name="genre"
-            value={formData.genre}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          >
-            <option>Fantasy</option>
-            <option>Sci-fi</option>
-            <option>Horror</option>
-            <option>Drama</option>
-            <option>Cyberpunk</option>
-          </select>
-          <select
-            name="tone"
-            value={formData.tone}
-            onChange={handleChange}
-            className="w-full p-2 border rounded"
-          >
-            <option>Cinematic</option>
-            <option>Dark</option>
-            <option>Whimsical</option>
-            <option>Gritty</option>
-            <option>Dreamlike</option>
-          </select>
-          <button
-            type="submit"
-            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
-          >
-            {loading ? "Generating..." : "Generate Moodboard"}
-          </button>
-        </form>
-
-        {description && (
-          <div className="mt-6 p-4 bg-gray-50 border-l-4 border-indigo-400 rounded">
-            <h2 className="text-xl font-semibold mb-2">Generated Description</h2>
-            <p className="text-gray-700 whitespace-pre-line">{description}</p>
-          </div>
-        )}
-
-        {imageUrl && (
-          <div className="mt-6">
-            <h2 className="text-xl font-semibold mb-2">Generated Image</h2>
-            <img
-              src={imageUrl}
-              alt="AI Moodboard"
-              className="w-full rounded shadow-md border"
-              onError={(e) => {
-                e.currentTarget.src = "https://via.placeholder.com/768x768?text=Image+Unavailable";
-              }}
-            />
-          </div>
-        )}
+        <MoodForm
+          formData={formData}
+          loading={loading}
+          onChange={handleChange}
+          onSubmit={handleSubmit}
+        />
+        <DescriptionBox description={description} />
+        <ImageDisplay imageUrl={imageUrl} />
       </div>
     </div>
   );
