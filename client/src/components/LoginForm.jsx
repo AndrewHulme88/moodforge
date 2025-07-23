@@ -2,7 +2,7 @@ import { useState } from "react";
 import { loginUser } from "../services/authService";
 import { useNavigate } from "react-router-dom";
 
-function LoginForm() {
+function LoginForm({ setToken }) {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
@@ -21,6 +21,7 @@ function LoginForm() {
     const result = await loginUser(formData);
     if (result.token) {
       localStorage.setItem("token", result.token);
+      setToken(result.token);
       navigate("/");
     } else {
       setError(result.error || "Login failed");
