@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { generateColorPalette } = require('../services/openaiService');
+const requireAuth = require('../middleware/authMiddleware');
 
-router.post('/', async (req, res) => {
+//router.post('/generate', requireAuth, async (req, res) => {
+router.post("/", async (req, res) => {
   const { description } = req.body;
   if (!description) return res.status(400).json({ error: "Missing description." });
 

@@ -34,10 +34,15 @@ function HomePage({ isAuthenticated }) {
     setImageUrl("");
     setPalette([]);
 
+    const token = localStorage.getItem("token");
+
     try {
       const textRes = await fetch("http://localhost:3001/api/generate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(formData),
       });
       const textData = await textRes.json();
@@ -46,7 +51,10 @@ function HomePage({ isAuthenticated }) {
 
       const colorRes = await fetch("http://localhost:3001/api/generate-colors", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ description: scene }),
       });
       const colorData = await colorRes.json();
@@ -54,11 +62,13 @@ function HomePage({ isAuthenticated }) {
 
       const imageRes = await fetch("http://localhost:3001/api/generate-image", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ prompt: scene }),
       });
       const imageData = await imageRes.json();
-      console.log("✅ Final image URL:", imageData.image);
       setImageUrl(imageData.image || "");
     } catch (err) {
       console.error("Error generating moodboard:", err);

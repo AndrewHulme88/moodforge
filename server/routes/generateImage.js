@@ -1,50 +1,28 @@
-// routes/generate-image.js
 const express = require("express");
 const router = express.Router();
-const Replicate = require("replicate");
+const { OpenAI } = require("openai");
+const requireAuth = require("../middleware/authMiddleware");
 
-// Initialize Replicate
-const replicate = new Replicate({
-  auth: process.env.REPLICATE_API_TOKEN,
-});
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-router.post("/", async (req, res) => {
+router.post("/", requireAuth, async (req, res) => {
   const { prompt } = req.body;
 
   try {
-    const prediction = await replicate.predictions.create({
-      version: "ac732df83cea7fff18b8472768c88ad041fa750ff7682a21affe81863cbe77e4",
-      input: {
-        prompt,
-        width: 768,
-        height: 768,
-      },
+    const response = await openai.images.generate({
+      model: "dall-e-3",
+      prompt,
+      n: 1,
+      size: "1024x1024",
     });
 
-    // Poll for the final result
-    let finalPrediction = prediction;
-    while (
-      finalPrediction.status !== "succeeded" &&
-      finalPrediction.status !== "failed"
-    ) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      finalPrediction = await replicate.predictions.get(finalPrediction.id);
-    }
+    const image = response.data[0]?.url;
+    if (!image) throw new Error("No image returned");
 
-    if (finalPrediction.status === "succeeded") {
-      const image = Array.isArray(finalPrediction.output)
-        ? finalPrediction.output[0]
-        : finalPrediction.output;
-
-      console.log("✅ Final image URL:", image);
-      res.json({ image });
-    } else {
-      console.warn("⚠️ Image generation failed or no output.");
-      res.status(500).json({ error: "Image generation failed." });
-    }
-
+    console.log("✅ OpenAI image URL:", image);
+    res.json({ image });
   } catch (err) {
-    console.error("❌ Image Gen Error:", err.message);
+    console.error("❌ OpenAI Image Gen Error:", err.message);
     res.status(500).json({ error: "Image generation failed." });
   }
 });

@@ -1,8 +1,10 @@
 const express = require('express');
 const router = express.Router();
 const { generateSceneDescription } = require('../services/openaiService');
+const requireAuth = require('../middleware/authMiddleware');
 
-router.post('/', async (req, res) => {
+//router.post('/generate', requireAuth, async (req, res) => {
+router.post("/", async (req, res) => {
   const { theme, genre, tone } = req.body;
   if (!theme || !genre || !tone) {
     return res.status(400).json({ error: "Missing required fields." });
