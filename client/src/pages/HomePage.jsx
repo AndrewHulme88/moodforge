@@ -16,6 +16,8 @@ function HomePage({ isAuthenticated }) {
   const [imageUrl, setImageUrl] = useState("");
   const [palette, setPalette] = useState([]);
 
+  const token = localStorage.getItem("token");
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center text-center p-6">
@@ -33,8 +35,6 @@ function HomePage({ isAuthenticated }) {
     setDescription("");
     setImageUrl("");
     setPalette([]);
-
-    const token = localStorage.getItem("token");
 
     try {
       const textRes = await fetch("http://localhost:3001/api/generate", {
@@ -78,6 +78,30 @@ function HomePage({ isAuthenticated }) {
     }
   };
 
+  const saveMoodboard = async () => {
+    try {
+      const res = await fetch("http://localhost:3001/api/moodboards", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...formData,
+          description,
+          imageUrl,
+          colors: palette,
+        }),
+      });
+
+      if (!res.ok) throw new Error("Failed to save");
+      alert("Moodboard saved!");
+    } catch (err) {
+      console.error("Save error:", err.message);
+      alert("Failed to save moodboard.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-4 sm:p-6">
       <div className="max-w-3xl mx-auto bg-white p-6 rounded-xl shadow-md mb-6">
@@ -99,6 +123,17 @@ function HomePage({ isAuthenticated }) {
           <div className="w-full sm:w-1/2 overflow-auto pl-2">
             <ImageDisplay imageUrl={imageUrl} />
           </div>
+        </div>
+      )}
+
+      {description && token && (
+        <div className="text-center mt-4">
+          <button
+            onClick={saveMoodboard}
+            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+          >
+            Save Moodboard
+          </button>
         </div>
       )}
     </div>

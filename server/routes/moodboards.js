@@ -1,31 +1,31 @@
 const express = require('express');
 const router = express.Router();
-const Moodboard = require('../models/Moodboard');
 const requireAuth = require('../middleware/authMiddleware');
+const Moodboard = require('../models/Moodboard');
 
-// Save moodboard
+// Create new moodboard
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const newMoodboard = new Moodboard({
-      user: req.user.id,
-      ...req.body
+    const newBoard = new Moodboard({
+      ...req.body,
+      user: req.userId, // This is critical
     });
-    const saved = await newMoodboard.save();
-    res.json(saved);
+
+    await newBoard.save();
+    res.status(201).json(newBoard);
   } catch (err) {
-    console.error("❌ Save Moodboard Error:", err.message);
-    res.status(500).json({ error: 'Failed to save moodboard' });
+    console.error("Save moodboard error:", err.message);
+    res.status(500).json({ error: "Failed to save moodboard." });
   }
 });
 
-// Get user's moodboards
+// Get all moodboards for logged-in user
 router.get('/', requireAuth, async (req, res) => {
   try {
-    const moodboards = await Moodboard.find({ user: req.user.id }).sort({ createdAt: -1 });
+    const moodboards = await Moodboard.find({ user: req.userId }).sort({ createdAt: -1 });
     res.json(moodboards);
   } catch (err) {
-    console.error("❌ Fetch Moodboards Error:", err.message);
-    res.status(500).json({ error: 'Failed to fetch moodboards' });
+    res.status(500).json({ error: "Failed to load moodboards" });
   }
 });
 
