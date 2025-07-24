@@ -4,6 +4,7 @@ import Navbar from "./components/Navbar";
 import LoginForm from "./components/LoginForm";
 import RegisterForm from "./components/RegisterForm";
 import HomePage from "./pages/HomePage";
+import Dashboard from "./pages/Dashboard";
 
 function App() {
   const [token, setToken] = useState(localStorage.getItem("token"));
@@ -30,6 +31,12 @@ function App() {
         <Route path="/" element={<HomePage isAuthenticated={isAuthenticated} />} />
         <Route path="/login" element={<LoginForm setToken={setToken} />} />
         <Route path="/register" element={<RegisterForm setToken={setToken} />} />
+        <Route
+          path="/dashboard"
+          element={
+            isAuthenticated ? <Dashboard /> : <Navigate to="/login" replace />
+          }
+        />
       </Routes>
     </div>
   );
