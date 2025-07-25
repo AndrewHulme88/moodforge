@@ -60,4 +60,26 @@ router.get('/', requireAuth, async (req, res) => {
   }
 });
 
+// DELETE moodboard
+router.delete('/:id', requireAuth, async (req, res) => {
+  try {
+    const board = await Moodboard.findOne({ _id: req.params.id, user: req.userId });
+
+    if (!board) return res.status(404).json({ error: 'Moodboard not found.' });
+
+    // Extract public ID from Cloudinary URL
+    const publicId = board.imageUrl?.split('/').pop().split('.')[0]; // Handles jpg/png/etc
+
+    if (publicId) {
+      await cloudinary.uploader.destroy(`moodforge/${publicId}`, { resource_type: 'image' });
+    }
+
+    await board.deleteOne();
+    res.json({ message: 'Moodboard deleted.' });
+  } catch (err) {
+    console.error('Delete error:', err.message);
+    res.status(500).json({ error: 'Failed to delete moodboard.' });
+  }
+});
+
 module.exports = router;
