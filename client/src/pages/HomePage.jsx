@@ -16,6 +16,10 @@ function HomePage({ isAuthenticated }) {
   const [imageUrl, setImageUrl] = useState("");
   const [palette, setPalette] = useState([]);
   const [error, setError] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [hasSaved, setHasSaved] = useState(false);
+
+
 
   const token = localStorage.getItem("token");
 
@@ -86,6 +90,7 @@ function HomePage({ isAuthenticated }) {
   };
 
   const saveMoodboard = async () => {
+    setSaving(true);
     try {
       const res = await fetch("http://localhost:3001/api/moodboards", {
         method: "POST",
@@ -96,16 +101,19 @@ function HomePage({ isAuthenticated }) {
         body: JSON.stringify({
           ...formData,
           description,
-          imageUrl,
+          openaiImageUrl: imageUrl,
           colors: palette,
         }),
       });
 
       if (!res.ok) throw new Error("Failed to save");
+      setHasSaved(true); // prevent future saves
       alert("Moodboard saved!");
     } catch (err) {
       console.error("Save error:", err.message);
       alert("Failed to save moodboard.");
+    } finally {
+      setSaving(false);
     }
   };
 
@@ -140,9 +148,18 @@ function HomePage({ isAuthenticated }) {
         <div className="text-center mt-4">
           <button
             onClick={saveMoodboard}
-            className="bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700"
+            disabled={saving || hasSaved}
+            className={`px-4 py-2 rounded text-white ${
+              saving || hasSaved
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-indigo-600 hover:bg-indigo-700"
+            }`}
           >
-            Save Moodboard
+            {saving
+              ? "Saving to dashboard..."
+              : hasSaved
+              ? "Saved"
+              : "Save Moodboard"}
           </button>
         </div>
       )}
