@@ -15,6 +15,7 @@ function HomePage({ isAuthenticated }) {
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [palette, setPalette] = useState([]);
+  const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -35,6 +36,7 @@ function HomePage({ isAuthenticated }) {
     setDescription("");
     setImageUrl("");
     setPalette([]);
+    setError("");
 
     try {
       const textRes = await fetch("http://localhost:3001/api/generate", {
@@ -68,11 +70,16 @@ function HomePage({ isAuthenticated }) {
         },
         body: JSON.stringify({ prompt: scene }),
       });
+
       const imageData = await imageRes.json();
+      if (!imageRes.ok) {
+        throw new Error(imageData.error || "Image generation failed.");
+      }
+
       setImageUrl(imageData.image || "");
     } catch (err) {
       console.error("Error generating moodboard:", err);
-      setDescription("Something went wrong.");
+      setError(err.message || "Something went wrong.");
     } finally {
       setLoading(false);
     }
@@ -112,6 +119,9 @@ function HomePage({ isAuthenticated }) {
           handleSubmit={handleSubmit}
           loading={loading}
         />
+        {error && (
+          <p className="mt-4 text-red-600 font-medium text-sm">{error}</p>
+        )}
       </div>
 
       {description && (
